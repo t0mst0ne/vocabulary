@@ -3,8 +3,9 @@ import socketserver
 import urllib.request
 import urllib.parse
 import sys
+import os
 
-PORT = 8000
+PORT = int(os.environ.get('PORT', 8000))
 
 class ProxyRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
