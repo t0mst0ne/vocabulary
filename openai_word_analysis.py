@@ -37,7 +37,7 @@ PROMPT_TEMPLATE = """
 
 # Refinement prompt for GPT-4.1
 REFINEMENT_PROMPT = """
-以下是單字 "{word}" 的初步分析草稿，請你作為英語詞彙專家，仔細校正並改善這個分析。確保資訊準確、中文翻譯正確、格式一致，且對大學學測考生有幫助。
+以下是單字 "{word}" 的初步分析草稿，請你作為英語詞彙專家，仔細校正並改善這個分析。確保資訊準確、中文翻譯正確、格式一致，不能無中生有的片語 然後去權威的線上字典（如 Merriam-Webster, Oxford Learner's Dictionaries, Longman）查證,如果字典裡完全沒有類似的用法，那要排除。
 
 原始草稿：
 {draft}

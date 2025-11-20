@@ -356,6 +356,8 @@ h1 {
   flex-direction: column;
   width: 100%;
   overflow: hidden;
+  min-height: 0;
+  /* Critical for nested flex scrolling */
   /* Ensure content stays within container */
 }
 
@@ -371,6 +373,8 @@ h1 {
   justify-content: center;
   padding: 10px;
   position: relative;
+  min-height: 0;
+  /* Critical for nested flex scrolling */
   /* For absolute positioning of button */
 }
 
