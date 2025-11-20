@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vocabulary Flashcards</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Vocabulary Flashcards</h1>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="learn">Learn</button>
+        <button class="tab-btn" data-tab="quiz">Quiz</button>
+      </div>
+    </header>
+
+    <!-- Learn Section -->
+    <div id="learn-section" class="tab-content active">
+      <div class="progress">
+        <span id="current-index">1</span> / <span id="total-count">--</span>
+      </div>
+      <div class="card-container" id="card-container">
+        <div class="card">
+          <div class="card-front">
+            <h2 id="word-display">Loading...</h2>
+            <p class="hint">Click to flip</p>
+          </div>
+          <div class="card-back">
+            <div class="content" id="analysis-content">
+              <!-- Analysis will be injected here -->
+            </div>
+            <div class="external-links">
+              <a id="cambridge-link" href="#" target="_blank" class="external-btn">View on Cambridge Dictionary</a>
+              <a id="mw-link" href="#" target="_blank" class="external-btn"
+                style="margin-top: 10px; background: #375f7d;">View on Merriam-Webster</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="prev-btn" class="btn">Previous</button>
+        <button id="next-btn" class="btn">Next</button>
+      </div>
+    </div>
+
+    <!-- Quiz Section -->
+    <div id="quiz-section" class="tab-content">
+      <div class="quiz-container">
+        <div class="quiz-header">
+          <span id="quiz-score">Score: 0</span>
+          <button id="download-mistakes-btn" class="btn small-btn" style="display:none;">Download Mistakes</button>
+        </div>
+        <button id="next-question-btn" class="btn">Next Question</button>
+        <div class="question-card">
+          <h2 id="quiz-question">Question Loading...</h2>
+          <div id="quiz-options" class="options-grid">
+            <!-- Options injected here -->
+          </div>
+          <div id="quiz-feedback" class="feedback"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+
+</html>

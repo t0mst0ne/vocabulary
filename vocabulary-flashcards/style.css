@@ -1,0 +1,485 @@
+:root {
+  --primary-color: #6366f1;
+  --secondary-color: #a855f7;
+  --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --glass-bg: rgba(255, 255, 255, 0.2);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --text-color: #1f2937;
+  --text-light: #f3f4f6;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text-color);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.container {
+  width: 100%;
+  max-width: 450px;
+  height: 80vh;
+  max-height: 800px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  color: white;
+}
+
+h1 {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.progress {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  color: white;
+  margin-bottom: 10px;
+}
+
+/* Card Styles */
+.card-container {
+  perspective: 1000px;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  min-height: 0; /* Important for flex child scrolling */
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.card.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--glass-border);
+}
+
+.card-front {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.card-back {
+  transform: rotateY(180deg);
+  background: rgba(255, 255, 255, 0.98);
+  overflow-y: auto;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+/* Front Content */
+#word-display {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.hint {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* Back Content */
+.content {
+  width: 100%;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--secondary-color);
+  margin-top: 10px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 2px;
+}
+
+.definition-item {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.pos {
+  font-style: italic;
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin-right: 5px;
+}
+
+.def {
+  font-weight: 500;
+}
+
+.ex {
+  display: block;
+  color: #4b5563;
+  font-size: 0.85rem;
+  margin-top: 2px;
+  padding-left: 10px;
+  border-left: 2px solid #e5e7eb;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid white;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Scrollbar for back card */
+.card-back::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-back::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.card-back::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+/* External Links */
+.external-links {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.external-btn {
+  display: inline-block;
+  text-decoration: none;
+  color: white;
+  background-color: #1d4ed8;
+  /* Cambridge Blue-ish */
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  width: 100%;
+  text-align: center;
+}
+
+.external-btn:hover {
+  background-color: #1e40af;
+}
+
+/* Cambridge Injected Styles */
+#cambridge-content {
+  font-size: 0.9rem;
+}
+
+#cambridge-content h3 {
+  font-size: 1rem;
+  color: #1d4ed8;
+  margin-bottom: 10px;
+}
+
+/* Hide some Cambridge elements that might clutter */
+.di-title,
+.pos-header .pron-block,
+.share,
+.superentry {
+  /* Keep title but maybe style it */
+}
+
+.def-block {
+  margin-bottom: 10px;
+  padding: 10px;
+  background: rgba(243, 244, 246, 0.5);
+  border-radius: 8px;
+}
+
+.def {
+  font-weight: bold;
+  color: #111;
+}
+
+.trans {
+  color: #059669;
+  /* Green for translation */
+}
+
+.examp {
+  margin-top: 5px;
+  font-style: italic;
+  color: #555;
+  padding-left: 10px;
+  border-left: 2px solid #cbd5e1;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.tab-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 5px 12px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  background: white;
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.tab-content {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  /* Ensure content stays within container */
+}
+
+.tab-content.active {
+  display: flex;
+}
+
+/* Quiz Styles */
+.quiz-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px;
+  position: relative;
+  /* For absolute positioning of button */
+}
+
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  color: white;
+  font-weight: bold;
+}
+
+.question-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+#next-question-btn {
+  width: 100%;
+  margin-bottom: 15px;
+  background: var(--primary-color);
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#next-question-btn:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+#quiz-question {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.options-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.option-btn {
+  background: white;
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  white-space: normal;
+  /* Allow wrapping */
+  word-wrap: break-word;
+  /* Break long words if needed */
+  height: auto;
+  /* Grow with content */
+}
+
+.option-btn:hover {
+  background: #f3f4f6;
+  transform: translateY(-1px);
+}
+
+.option-btn.correct {
+  background: #dcfce7;
+  border-color: #22c55e;
+  color: #15803d;
+}
+
+.option-btn.wrong {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #b91c1c;
+}
+
+.feedback {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  display: none;
+}
+
+.feedback.show {
+  display: block;
+}
+
+.small-btn {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+}
+
+.stripped-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: text;
+  border-bottom: none;
+}
+
+#mw-content {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+#mw-content h3 {
+  color: #375f7d;
+  margin-bottom: 10px;
+}
+
+/* Search Tooltip */
+.search-tooltip {
+  position: absolute;
+  z-index: 2000;
+  background: #333;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  font-size: 0.9rem;
+  pointer-events: auto;
+}
+
+.search-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+#search-cambridge-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0;
+}
+
+#search-cambridge-btn:hover {
+  text-decoration: underline;
+}
