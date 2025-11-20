@@ -416,8 +416,8 @@ document.addEventListener('DOMContentLoaded', () => {
         mwContainer.innerHTML = '<p>Could not extract content automatically. Please use the link below.</p>';
       }
     } catch (error) {
-      console.error('MW Fetch error:', error);
-      mwContainer.innerHTML = '<p>Failed to load Merriam-Webster content. Please use the link above.</p>';
+      console.log('MW Fetch error (expected on static host):', error);
+      mwContainer.innerHTML = '<p style="color:#666; font-size: 0.9rem;">Preview not available in static mode. <br>Please click the button above to view on Merriam-Webster.</p>';
     }
   }
 
@@ -482,8 +482,8 @@ document.addEventListener('DOMContentLoaded', () => {
         cambridgeContainer.innerHTML = '<p>Could not extract content automatically. Please use the link below.</p>';
       }
     } catch (error) {
-      console.error('Fetch error:', error);
-      cambridgeContainer.innerHTML = '<p>Failed to load Cambridge content. Please use the link above.</p>';
+      console.log('Fetch error (expected on static host):', error);
+      cambridgeContainer.innerHTML = '<p style="color:#666; font-size: 0.9rem;">Preview not available in static mode. <br>Please click the button above to view on Cambridge Dictionary.</p>';
     }
   }
 
