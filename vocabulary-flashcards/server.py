@@ -43,8 +43,9 @@ class ProxyRequestHandler(http.server.SimpleHTTPRequestHandler):
             print(f"Proxy error: {e}")
             self.send_error(500, f"Proxy error: {str(e)}")
 
-print(f"Serving at http://localhost:{PORT}")
-with socketserver.TCPServer(("", PORT), ProxyRequestHandler) as httpd:
+print(f"Serving at http://0.0.0.0:{PORT}")
+sys.stdout.flush() # Ensure logs appear in Railway immediately
+with socketserver.TCPServer(("0.0.0.0", PORT), ProxyRequestHandler) as httpd:
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
