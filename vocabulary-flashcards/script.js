@@ -135,7 +135,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // 1. Try Cambridge Data first
       if (targetWord.cambridge && targetWord.cambridge.meanings && targetWord.cambridge.meanings.length > 0) {
-        const randIdx = Math.floor(Math.random() * targetWord.cambridge.meanings.length);
+        // Prioritize less common meanings (index > 0)
+        // If there are multiple meanings, 80% chance to pick from index 1+
+        let candidateIndices = targetWord.cambridge.meanings.map((_, i) => i);
+        if (targetWord.cambridge.meanings.length > 1 && Math.random() < 0.8) {
+          candidateIndices = candidateIndices.slice(1);
+        }
+
+        const randIdx = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
         const cambridgeMeaning = targetWord.cambridge.meanings[randIdx];
 
         // Adapt to expected format
@@ -169,6 +176,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // For Cloze, we need an example. If no example, try another word.
+      if (!selectedMeaning.example) {
+        setTimeout(generateQuestion, 0);
+        return;
+      }
+
       // Pick 3 distractors
       const distractors = [];
       let attempts = 0;
@@ -186,53 +199,38 @@ document.addEventListener('DOMContentLoaded', () => {
       currentQuestion = {
         target: targetWord,
         targetMeaning: selectedMeaning,
-        options: options
+        options: options,
+        fullExample: selectedMeaning.example // Store full example for feedback
       };
 
-      // Display Question
-      quizQuestion.textContent = targetWord.word;
+      // Display Question (Masked Sentence)
+      // Mask the word in the example (Escape special chars for Regex)
+      const escapedWord = targetWord.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // Match whole word, case insensitive
+      const regex = new RegExp(`\\b${escapedWord}\\b`, 'gi');
+      // Also try matching without word boundaries if the word might be part of a larger structure or punctuation
+      // But for now, simple regex. If it fails to mask, we might show the word, which is a bug but acceptable for MVP.
 
-      // Add Reference Sentence (Masked)
-      if (selectedMeaning.example) {
-        const refDiv = document.createElement('div');
-        refDiv.id = 'quiz-reference';
-        refDiv.style.marginBottom = '15px';
-        refDiv.style.fontStyle = 'italic';
-        refDiv.style.color = '#555';
-        refDiv.style.padding = '10px';
-        refDiv.style.background = 'rgba(255,255,255,0.5)';
-        refDiv.style.borderRadius = '8px';
+      let maskedExample = selectedMeaning.example.replace(regex, '______');
 
-        // Mask the word in the example (Escape special chars for Regex)
-        const escapedWord = targetWord.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(escapedWord, 'gi');
-        const maskedExample = selectedMeaning.example.replace(regex, '______');
-
-        refDiv.innerHTML = `<strong>Reference:</strong> "${maskedExample}"`;
-        // Insert after question
-        quizQuestion.parentNode.insertBefore(refDiv, quizOptions);
+      // Fallback: if regex didn't match (e.g. different form like "abandoned"), try a looser match or just skip this word
+      // If the word isn't found, we can't do a cloze.
+      if (maskedExample === selectedMeaning.example) {
+        // Try matching variations (simple heuristic: first 4 chars?)
+        // Or just skip this word
+        setTimeout(generateQuestion, 0);
+        return;
       }
 
+      quizQuestion.innerHTML = `"${maskedExample}"`;
+      quizQuestion.style.fontStyle = "italic";
+      quizQuestion.style.fontSize = "1.2em";
+
+      // Options are now just the words
       options.forEach(opt => {
         const btn = document.createElement('div');
         btn.className = 'option-btn';
-
-        let defText = "No definition available";
-
-        // For target, use the SELECTED meaning
-        if (opt === targetWord) {
-          defText = extractEnglish(selectedMeaning.definition);
-        } else {
-          // For distractors, use their most common meaning (English only)
-          // Prioritize Cambridge for distractors too
-          if (opt.cambridge && opt.cambridge.meanings && opt.cambridge.meanings.length > 0) {
-            defText = extractEnglish(opt.cambridge.meanings[0].definition);
-          } else if (opt.analysis && opt.analysis.most_common_meaning) {
-            defText = extractEnglish(opt.analysis.most_common_meaning.definition);
-          }
-        }
-
-        btn.textContent = defText;
+        btn.textContent = opt.word; // Show Word
         btn.addEventListener('click', () => checkAnswer(opt, btn));
         quizOptions.appendChild(btn);
       });
@@ -277,7 +275,13 @@ document.addEventListener('DOMContentLoaded', () => {
         btnElement.classList.add('correct');
         quizScore++;
         quizScoreDisplay.textContent = `Score: ${quizScore}`;
-        quizFeedback.innerHTML = '<span style="color:green">Correct!</span>';
+
+        const correctDef = extractEnglish(currentQuestion.targetMeaning.definition);
+        quizFeedback.innerHTML = `
+          <span style="color:green">Correct!</span><br>
+          <b>${currentQuestion.target.word}</b>: ${correctDef}<br>
+          <div style="margin-top:5px; font-style:italic; color:#555;">"${currentQuestion.fullExample}"</div>
+        `;
       } else {
         btnElement.classList.add('wrong');
         // Highlight correct one
@@ -287,7 +291,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const correctDef = extractEnglish(currentQuestion.targetMeaning.definition);
-        quizFeedback.innerHTML = `<span style="color:red">Incorrect.</span> The correct answer is <b>${currentQuestion.target.word}</b>: ${correctDef}`;
+        quizFeedback.innerHTML = `
+          <span style="color:red">Incorrect.</span> The correct answer is <b>${currentQuestion.target.word}</b><br>
+          Definition: ${correctDef}<br>
+          <div style="margin-top:5px; font-style:italic; color:#555;">"${currentQuestion.fullExample}"</div>
+        `;
 
         // Track Mistake
         trackMistake(currentQuestion.target, selectedOption);
