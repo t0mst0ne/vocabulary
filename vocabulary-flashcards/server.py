@@ -8,6 +8,10 @@ app = Flask(__name__, static_folder=None)
 def root():
     return send_from_directory('.', 'index.html')
 
+@app.route('/data/<path:path>')
+def serve_data(path):
+    return send_from_directory('data', path)
+
 @app.route('/<path:path>')
 def serve_static(path):
     return send_from_directory('.', path)
