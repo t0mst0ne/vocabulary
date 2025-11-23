@@ -144,7 +144,7 @@ def main():
         time.sleep(random.uniform(1.0, 2.5))
         
         # Safety break for testing - REMOVE THIS FOR FULL RUN
-        if count >= 20: 
+        if count >= 50: 
            break
 
     # Final save
