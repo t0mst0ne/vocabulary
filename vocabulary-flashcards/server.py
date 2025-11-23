@@ -1,52 +1,41 @@
-import http.server
-import socketserver
-import urllib.request
-import urllib.parse
-import sys
+from flask import Flask, request, send_from_directory, Response
+import requests
 import os
 
-PORT = int(os.environ.get('PORT', 8000))
+app = Flask(__name__, static_folder=None)
 
-class ProxyRequestHandler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        if self.path.startswith('/api/proxy'):
-            self.handle_proxy()
-        else:
-            super().do_GET()
+@app.route('/')
+def root():
+    return send_from_directory('.', 'index.html')
 
-    def handle_proxy(self):
-        try:
-            # Parse query parameters
-            query = urllib.parse.urlparse(self.path).query
-            params = urllib.parse.parse_qs(query)
-            target_url = params.get('url', [None])[0]
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory('.', path)
 
-            if not target_url:
-                self.send_error(400, "Missing 'url' parameter")
-                return
-
-            # Fetch the external URL
-            # Add User-Agent to avoid being blocked by some sites
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
-            req = urllib.request.Request(target_url, headers=headers)
-            
-            with urllib.request.urlopen(req) as response:
-                content = response.read()
-                
-                self.send_response(200)
-                self.send_header('Content-type', 'text/html')
-                self.send_header('Access-Control-Allow-Origin', '*') # Allow CORS
-                self.end_headers()
-                self.wfile.write(content)
-
-        except Exception as e:
-            print(f"Proxy error: {e}")
-            self.send_error(500, f"Proxy error: {str(e)}")
-
-print(f"Serving at http://0.0.0.0:{PORT}")
-sys.stdout.flush() # Ensure logs appear in Railway immediately
-with socketserver.ThreadingTCPServer(("0.0.0.0", PORT), ProxyRequestHandler) as httpd:
+@app.route('/api/proxy')
+def proxy():
+    url = request.args.get('url')
+    if not url:
+        return "Missing url", 400
+    
     try:
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        print("\nServer stopped.")
+        # Add User-Agent to avoid being blocked
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        resp = requests.get(url, headers=headers)
+        
+        # Exclude some headers that might cause issues
+        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+        headers = [(name, value) for (name, value) in resp.raw.headers.items()
+                   if name.lower() not in excluded_headers]
+        
+        response = Response(resp.content, resp.status_code, headers)
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+        
+    except Exception as e:
+        print(f"Proxy error: {e}")
+        return str(e), 500
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port)
