@@ -130,9 +130,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const targetIndex = Math.floor(Math.random() * words.length);
       const targetWord = words[targetIndex];
 
-      // Select Meaning (Prioritize Less Common)
+      // Select Meaning (Prioritize Cambridge, then Less Common)
       let selectedMeaning = null;
-      if (targetWord.analysis && targetWord.analysis.less_common_meanings && targetWord.analysis.less_common_meanings.length > 0) {
+
+      // 1. Try Cambridge Data first
+      if (targetWord.cambridge && targetWord.cambridge.meanings && targetWord.cambridge.meanings.length > 0) {
+        const randIdx = Math.floor(Math.random() * targetWord.cambridge.meanings.length);
+        const cambridgeMeaning = targetWord.cambridge.meanings[randIdx];
+
+        // Adapt to expected format
+        selectedMeaning = {
+          definition: cambridgeMeaning.definition,
+          example: cambridgeMeaning.examples && cambridgeMeaning.examples.length > 0
+            ? cambridgeMeaning.examples[Math.floor(Math.random() * cambridgeMeaning.examples.length)]
+            : ""
+        };
+      }
+
+      // 2. Fallback to existing analysis (Less Common)
+      if (!selectedMeaning && targetWord.analysis && targetWord.analysis.less_common_meanings && targetWord.analysis.less_common_meanings.length > 0) {
         // 70% chance to pick a less common meaning if available
         if (Math.random() < 0.7) {
           const randIdx = Math.floor(Math.random() * targetWord.analysis.less_common_meanings.length);
@@ -140,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // Fallback to most common
+      // 3. Fallback to most common
       if (!selectedMeaning && targetWord.analysis && targetWord.analysis.most_common_meaning) {
         selectedMeaning = targetWord.analysis.most_common_meaning;
       }
@@ -208,7 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
           defText = extractEnglish(selectedMeaning.definition);
         } else {
           // For distractors, use their most common meaning (English only)
-          if (opt.analysis && opt.analysis.most_common_meaning) {
+          // Prioritize Cambridge for distractors too
+          if (opt.cambridge && opt.cambridge.meanings && opt.cambridge.meanings.length > 0) {
+            defText = extractEnglish(opt.cambridge.meanings[0].definition);
+          } else if (opt.analysis && opt.analysis.most_common_meaning) {
             defText = extractEnglish(opt.analysis.most_common_meaning.definition);
           }
         }
