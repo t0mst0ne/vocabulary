@@ -45,7 +45,7 @@ def fetch_cambridge_data(word):
             def_node = def_head.find(class_='ddef_d')
             if not def_node: continue
             
-            definition_text = def_node.get_text(strip=True)
+            definition_text = def_node.get_text(separator=' ', strip=True)
             
             # Definition Body (contains translation and examples)
             def_body = block.find(class_='def-body')
@@ -53,7 +53,7 @@ def fetch_cambridge_data(word):
 
             # Chinese Translation (First .trans in body)
             trans_node = def_body.find(class_='trans')
-            translation_text = trans_node.get_text(strip=True) if trans_node else ""
+            translation_text = trans_node.get_text(separator=' ', strip=True) if trans_node else ""
             
             full_definition = f"{translation_text} ({definition_text})" if translation_text else definition_text
             
@@ -62,17 +62,11 @@ def fetch_cambridge_data(word):
             examp_nodes = def_body.find_all(class_='examp')
             for ex in examp_nodes:
                 eg_node = ex.find(class_='eg')
-                ex_trans_node = ex.find(class_='trans')
                 
                 if eg_node:
-                    eg_text = eg_node.get_text(strip=True)
-                    ex_trans_text = ex_trans_node.get_text(strip=True) if ex_trans_node else ""
-                    
-                    # Combine if translation exists
-                    if ex_trans_text:
-                        examples.append(f"{eg_text} ({ex_trans_text})")
-                    else:
-                        examples.append(eg_text)
+                    eg_text = eg_node.get_text(separator=' ', strip=True)
+                    # User requested NO Chinese in examples for the quiz
+                    examples.append(eg_text)
             
             if examples:
                 meanings.append({
@@ -117,8 +111,9 @@ def main():
         word = item['word']
         
         # Skip if already has cambridge data (unless we want to force update)
-        if 'cambridge' in item and item['cambridge']:
-            continue
+        # FORCE UPDATE enabled to fix broken data
+        # if 'cambridge' in item and item['cambridge']:
+        #    continue
             
         print(f"Fetching: {word}...")
         cambridge_data = fetch_cambridge_data(word)
