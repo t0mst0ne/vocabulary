@@ -132,56 +132,98 @@ document.addEventListener('DOMContentLoaded', () => {
       const targetIndex = Math.floor(Math.random() * words.length);
       const targetWord = words[targetIndex];
 
-      // Select Meaning (Prioritize Cambridge, then Less Common)
       let selectedMeaning = null;
+      let maskedExample = "";
+      let fullExample = "";
 
-      // 1. Try Cambridge Data first
-      if (targetWord.cambridge && targetWord.cambridge.meanings && targetWord.cambridge.meanings.length > 0) {
-        // Prioritize less common meanings (index > 0)
-        // If there are multiple meanings, 80% chance to pick from index 1+
-        let candidateIndices = targetWord.cambridge.meanings.map((_, i) => i);
-        if (targetWord.cambridge.meanings.length > 1 && Math.random() < 0.8) {
-          candidateIndices = candidateIndices.slice(1);
+      // 1. Check for Pre-calculated Quiz Data (Enriched)
+      if (targetWord.quiz && targetWord.quiz.example && targetWord.quiz.target_word) {
+        fullExample = targetWord.quiz.example;
+        const targetForm = targetWord.quiz.target_word;
+
+        // Mask the specific target form found by NLTK
+        // Escape special chars just in case
+        const escapedTarget = targetForm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // Match exact word form, case insensitive
+        const regex = new RegExp(`\\b${escapedTarget}\\b`, 'gi');
+
+        maskedExample = fullExample.replace(regex, '______');
+
+        // If masking failed (rare, but possible if NLTK tokenization differed from regex word boundary), try fallback
+        if (maskedExample === fullExample) {
+          // Fallback to simple string replacement if regex fails
+          maskedExample = fullExample.replace(targetForm, '______');
         }
 
-        const randIdx = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
-        const cambridgeMeaning = targetWord.cambridge.meanings[randIdx];
-
-        // Adapt to expected format
-        selectedMeaning = {
-          definition: cambridgeMeaning.definition,
-          example: cambridgeMeaning.examples && cambridgeMeaning.examples.length > 0
-            ? cambridgeMeaning.examples[Math.floor(Math.random() * cambridgeMeaning.examples.length)]
-            : ""
-        };
-      }
-
-      // 2. Fallback to existing analysis (Less Common)
-      if (!selectedMeaning && targetWord.analysis && targetWord.analysis.less_common_meanings && targetWord.analysis.less_common_meanings.length > 0) {
-        // 70% chance to pick a less common meaning if available
-        if (Math.random() < 0.7) {
-          const randIdx = Math.floor(Math.random() * targetWord.analysis.less_common_meanings.length);
-          selectedMeaning = targetWord.analysis.less_common_meanings[randIdx];
+        // Find a definition to show in feedback
+        // We still need a definition. Try to find one from Cambridge or Analysis.
+        if (targetWord.cambridge && targetWord.cambridge.meanings && targetWord.cambridge.meanings.length > 0) {
+          selectedMeaning = { definition: targetWord.cambridge.meanings[0].definition };
+        } else if (targetWord.analysis && targetWord.analysis.most_common_meaning) {
+          selectedMeaning = targetWord.analysis.most_common_meaning;
+        } else {
+          selectedMeaning = { definition: "Definition not available." };
         }
-      }
 
-      // 3. Fallback to most common
-      if (!selectedMeaning && targetWord.analysis && targetWord.analysis.most_common_meaning) {
-        selectedMeaning = targetWord.analysis.most_common_meaning;
-      }
+        // Store for consistency with old structure
+        selectedMeaning.example = fullExample;
 
-      // Safety check
-      if (!selectedMeaning) {
-        // Try another word if this one has no data
-        // Use setTimeout to avoid recursion stack overflow
-        setTimeout(generateQuestion, 0);
-        return;
-      }
+      } else {
+        // 2. Fallback to Dynamic Logic (Old Method)
 
-      // For Cloze, we need an example. If no example, try another word.
-      if (!selectedMeaning.example) {
-        setTimeout(generateQuestion, 0);
-        return;
+        // Select Meaning (Prioritize Cambridge, then Less Common)
+        // 1. Try Cambridge Data first
+        if (targetWord.cambridge && targetWord.cambridge.meanings && targetWord.cambridge.meanings.length > 0) {
+          // Prioritize less common meanings (index > 0)
+          // If there are multiple meanings, 80% chance to pick from index 1+
+          let candidateIndices = targetWord.cambridge.meanings.map((_, i) => i);
+          if (targetWord.cambridge.meanings.length > 1 && Math.random() < 0.8) {
+            candidateIndices = candidateIndices.slice(1);
+          }
+
+          const randIdx = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
+          const cambridgeMeaning = targetWord.cambridge.meanings[randIdx];
+
+          // Adapt to expected format
+          selectedMeaning = {
+            definition: cambridgeMeaning.definition,
+            example: cambridgeMeaning.examples && cambridgeMeaning.examples.length > 0
+              ? cambridgeMeaning.examples[Math.floor(Math.random() * cambridgeMeaning.examples.length)]
+              : ""
+          };
+        }
+
+        // 2. Fallback to existing analysis (Less Common)
+        if (!selectedMeaning && targetWord.analysis && targetWord.analysis.less_common_meanings && targetWord.analysis.less_common_meanings.length > 0) {
+          // 70% chance to pick a less common meaning if available
+          if (Math.random() < 0.7) {
+            const randIdx = Math.floor(Math.random() * targetWord.analysis.less_common_meanings.length);
+            selectedMeaning = targetWord.analysis.less_common_meanings[randIdx];
+          }
+        }
+
+        // 3. Fallback to most common
+        if (!selectedMeaning && targetWord.analysis && targetWord.analysis.most_common_meaning) {
+          selectedMeaning = targetWord.analysis.most_common_meaning;
+        }
+
+        // Safety check
+        if (!selectedMeaning || !selectedMeaning.example) {
+          setTimeout(generateQuestion, 0);
+          return;
+        }
+
+        fullExample = selectedMeaning.example;
+
+        // Masking Logic (Old Regex)
+        const escapedWord = targetWord.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`\\b${escapedWord}\\b`, 'gi');
+        maskedExample = fullExample.replace(regex, '______');
+
+        if (maskedExample === fullExample) {
+          setTimeout(generateQuestion, 0);
+          return;
+        }
       }
 
       // Pick 3 distractors
@@ -202,27 +244,8 @@ document.addEventListener('DOMContentLoaded', () => {
         target: targetWord,
         targetMeaning: selectedMeaning,
         options: options,
-        fullExample: selectedMeaning.example // Store full example for feedback
+        fullExample: fullExample
       };
-
-      // Display Question (Masked Sentence)
-      // Mask the word in the example (Escape special chars for Regex)
-      const escapedWord = targetWord.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      // Match whole word, case insensitive
-      const regex = new RegExp(`\\b${escapedWord}\\b`, 'gi');
-      // Also try matching without word boundaries if the word might be part of a larger structure or punctuation
-      // But for now, simple regex. If it fails to mask, we might show the word, which is a bug but acceptable for MVP.
-
-      let maskedExample = selectedMeaning.example.replace(regex, '______');
-
-      // Fallback: if regex didn't match (e.g. different form like "abandoned"), try a looser match or just skip this word
-      // If the word isn't found, we can't do a cloze.
-      if (maskedExample === selectedMeaning.example) {
-        // Try matching variations (simple heuristic: first 4 chars?)
-        // Or just skip this word
-        setTimeout(generateQuestion, 0);
-        return;
-      }
 
       quizQuestion.innerHTML = `"${maskedExample}"`;
       quizQuestion.style.fontStyle = "italic";
