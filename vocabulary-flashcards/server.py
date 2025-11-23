@@ -45,7 +45,7 @@ class ProxyRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 print(f"Serving at http://0.0.0.0:{PORT}")
 sys.stdout.flush() # Ensure logs appear in Railway immediately
-with socketserver.TCPServer(("0.0.0.0", PORT), ProxyRequestHandler) as httpd:
+with socketserver.ThreadingTCPServer(("0.0.0.0", PORT), ProxyRequestHandler) as httpd:
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
