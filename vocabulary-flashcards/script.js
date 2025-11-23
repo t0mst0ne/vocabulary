@@ -32,13 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
   fetch('data/words.json')
     .then(response => response.json())
     .then(data => {
-      // Filter for words with Cambridge data to ensure high-quality Cloze sentences
-      words = data.filter(w => w.cambridge).sort(() => Math.random() - 0.5);
-
-      if (words.length === 0) {
-        // Fallback if no Cambridge data exists yet (shouldn't happen if scraped)
-        words = data.sort(() => Math.random() - 0.5);
-      }
+      // Use all words. Words with Cambridge data will be prioritized for quality,
+      // but others will fall back to WordNet examples if available.
+      words = data.sort(() => Math.random() - 0.5);
 
       totalCountDisplay.textContent = words.length;
       loadCard(currentIndex);
